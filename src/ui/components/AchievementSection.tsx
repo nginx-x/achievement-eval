@@ -22,7 +22,6 @@ function LevelDistRow({ label, sub, counts, n, total }: {
   const segments = LEVELS
     .map((lv) => ({ lv, c: counts[lv] ?? 0, w: n ? ((counts[lv] ?? 0) / n) * 100 : 0 }))
     .filter((seg) => seg.w > 0);
-  const showValueLine = segments.some((seg) => seg.w < 14);
 
   return (
     <div className={`cd-row${total ? ' cd-total' : ''}`}>
@@ -39,16 +38,6 @@ function LevelDistRow({ label, sub, counts, n, total }: {
             );
           })}
         </div>
-        {showValueLine && (
-          <div className="cd-values">
-            {segments.map(({ lv, c }) => (
-              <span key={lv}>
-                <i style={{ background: LEVEL_COLORS[lv] }} />
-                {lv} {c}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

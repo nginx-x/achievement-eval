@@ -7,6 +7,7 @@ import { Dashboard } from './components/Dashboard';
 interface AvailableUpdate {
   version: string;
   pageUrl: string;
+  downloadUrl: string;
 }
 
 export function App() {
@@ -65,14 +66,21 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar" ref={topbarRef}>
-        <h1>지필평가 문항분석 <span className="ver">v{packageJson.version}</span></h1>
-        <div className="topbar-right">
+        <div className="topbar-title">
+          <h1>지필평가 문항분석 <span className="ver">v{packageJson.version}</span></h1>
           {availableUpdate && (
-            <a className="update-available" href={availableUpdate.pageUrl} target="_blank" rel="noreferrer noopener"
-              title={`현재 v${packageJson.version} · 새 버전 열기`}>
-              새 버전 v{availableUpdate.version}
+            <a
+              className="update-available"
+              href={availableUpdate.downloadUrl}
+              download="achievement-eval.html"
+              rel="noreferrer noopener"
+              title={`v${availableUpdate.version} 단일 HTML 다운로드`}
+            >
+              새 버전 v{availableUpdate.version} 다운로드
             </a>
           )}
+        </div>
+        <div className="topbar-right">
           {status === 'ready' && <button className="btn-ghost" onClick={reset}>새로 시작</button>}
         </div>
       </header>

@@ -5,11 +5,13 @@ export const APP_VERSION = packageJson.version;
 export interface UpdateInfo {
   version: string;
   pageUrl: string;
+  downloadUrl: string;
 }
 
 interface UpdateTarget {
   packageUrl: string;
   pageUrl: string;
+  downloadUrl: string;
 }
 
 interface PackageMetadata {
@@ -48,6 +50,7 @@ export function inferGitHubPagesTarget(pageUrl: URL): UpdateTarget | null {
   return {
     packageUrl: `https://raw.githubusercontent.com/${owner}/${repo}/main/package.json`,
     pageUrl: firstPath ? `${pageUrl.origin}/${repo}/` : `${pageUrl.origin}/`,
+    downloadUrl: `https://github.com/${owner}/${repo}/releases/latest/download/achievement-eval.html`,
   };
 }
 
@@ -61,13 +64,18 @@ export function targetFromGitHubRepository(repository: string, homepage?: string
   return {
     packageUrl: `https://raw.githubusercontent.com/${owner}/${repo}/main/package.json`,
     pageUrl: homepage?.trim() || `https://${owner}.github.io/${repo}/`,
+    downloadUrl: `https://github.com/${owner}/${repo}/releases/latest/download/achievement-eval.html`,
   };
 }
 
 function configuredTarget(): UpdateTarget | null {
   const packageUrl = import.meta.env.VITE_UPDATE_PACKAGE_URL?.trim();
   const pageUrl = import.meta.env.VITE_UPDATE_PAGE_URL?.trim();
-  if (packageUrl) return { packageUrl, pageUrl: pageUrl || packageUrl };
+  const downloadUrl = import.meta.env.VITE_UPDATE_DOWNLOAD_URL?.trim();
+  if (packageUrl) {
+    const fallbackUrl = pageUrl || packageUrl;
+    return { packageUrl, pageUrl: fallbackUrl, downloadUrl: downloadUrl || fallbackUrl };
+  }
   const metadata = packageJson as PackageMetadata;
   const repository = typeof metadata.repository === 'string' ? metadata.repository : metadata.repository?.url;
   if (repository) {
@@ -99,7 +107,9 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
     const version = typeof data === 'object' && data != null && 'version' in data
       ? String((data as { version: unknown }).version)
       : '';
-    return isNewerVersion(version, APP_VERSION) ? { version, pageUrl: target.pageUrl } : null;
+    return isNewerVersion(version, APP_VERSION)
+      ? { version, pageUrl: target.pageUrl, downloadUrl: target.downloadUrl }
+      : null;
   } catch {
     return null;
   } finally {

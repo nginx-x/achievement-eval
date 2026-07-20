@@ -43,10 +43,12 @@ em { font-style: normal; }
 
 /* top bar */
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: var(--canvas); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; }
+.topbar-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .topbar h1 { font-size: 18px; margin: 0; letter-spacing: -0.3px; }
 .topbar .ver { font-size: 12px; color: var(--primary); font-weight: 700; letter-spacing: .5px; vertical-align: super; }
 .topbar-right { display: flex; gap: 10px; align-items: center; }
 .update-available { display: inline-flex; align-items: center; padding: 4px 9px; border-radius: var(--r-pill); background: #e7eefb; color: #2a4d8f; font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.update-available::after { content: '↓'; margin-left: 4px; font-size: 11px; }
 .update-available:hover { background: #d8e5f8; color: #203f78; }
 .center { text-align: center; padding: 70px 20px; }
 
@@ -93,13 +95,19 @@ em { font-style: normal; }
 .upload-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; flex-wrap: wrap; gap: 10px; }
 
 /* colophon (출처·감사·만든 이) */
-.colophon { max-width: 760px; margin: 28px auto 8px; padding-top: 18px; border-top: 1px solid var(--line); }
-.colophon-head { font-size: 12px; font-weight: 700; letter-spacing: .3px; color: var(--body-mid); margin-bottom: 6px; }
-.colophon p { margin: 0; font-size: 13.5px; line-height: 1.7; color: var(--body); }
+.colophon { max-width: 760px; margin: 30px auto 10px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--canvas-soft); }
+.colophon-head { font-size: 16px; font-weight: 700; letter-spacing: -.2px; color: var(--ink); margin-bottom: 5px; }
+.colophon p { margin: 0; font-size: 13px; line-height: 1.65; color: var(--body); }
+.colophon-intro { max-width: 640px; color: var(--ink-soft) !important; }
+.colophon-story { display: grid; gap: 7px; margin-top: 14px; }
 .colophon a { color: var(--body); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--line-strong); }
 .colophon a:hover { color: var(--primary); text-decoration-color: var(--primary); }
-.colophon-by { margin-top: 4px !important; color: var(--body-mid) !important; font-size: 12px !important; }
-.colophon-by span { white-space: nowrap; }
+.colophon-notice { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; margin-top: 12px; padding: 10px 12px; border-left: 3px solid #d88368; background: #fff7f2; color: var(--body); font-size: 12.5px; line-height: 1.55; }
+.colophon-notice strong { color: var(--ink); white-space: nowrap; }
+.colophon-updates { display: grid; gap: 8px; margin-top: 12px; }
+.colophon-update { padding: 13px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--canvas); }
+.colophon-update strong { display: block; margin-bottom: 5px; color: var(--ink); font-size: 13px; }
+.colophon-by { margin-top: 12px !important; padding-top: 10px; border-top: 1px solid var(--line); color: var(--body-mid) !important; font-size: 12px !important; text-align: right; }
 .reqs { display: flex; gap: 14px; align-items: center; font-size: 14px; flex-wrap: wrap; }
 .reqs .ok { color: #2e7d32; font-weight: 600; } .reqs .need { color: var(--body-mid); }
 .warn-inline { color: #b26a00; font-size: 12px; }
@@ -202,9 +210,6 @@ em { font-style: normal; }
 .cd-stack { min-width: 0; }
 .cd-bar { display: flex; height: 18px; border-radius: var(--r-sm); overflow: hidden; border: 1px solid var(--line); }
 .cd-seg { display: flex; align-items: center; justify-content: center; min-width: 0; padding: 0 3px; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: visible; }
-.cd-values { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 2px; color: var(--ink-mid); font-size: 11px; line-height: 1.2; }
-.cd-values span { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
-.cd-values i { width: 8px; height: 8px; border: 1px solid var(--line-strong); border-radius: 2px; }
 .cd-row.cd-total .cd-bar { height: 24px; }
 .cd-row.cd-total .cd-seg { font-size: 12px; }
 .cd-row.cd-total { padding-bottom: 6px; border-bottom: 1px dashed var(--line); margin-bottom: 3px; }
@@ -300,4 +305,12 @@ em { font-style: normal; }
   .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
   .chart-grid { grid-template-columns: 1fr; }
   .achievement-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .topbar { padding: 10px 14px; }
+  .topbar-title { gap: 6px; flex-wrap: wrap; }
+  .topbar h1 { font-size: 16px; }
+  .update-available { font-size: 11px; padding: 3px 7px; }
+  .colophon-notice { grid-template-columns: 1fr; gap: 2px; }
 }

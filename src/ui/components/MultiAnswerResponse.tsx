@@ -66,11 +66,13 @@ export function MultiAnswerResponse({ item, nStudents }: { item: ItemStat; nStud
       <section className="multi-section">
         <h4 className="sub">선택지별 선택률 <span className="muted sm">(각 선택지를 포함한 학생 비율)</span></h4>
         <div className="tbl-scroll">
-          <table className="tbl compact option-selection">
+          <table className="tbl xtab compact option-selection">
             <thead>
               <tr>
                 <th>수준</th>
-                {OPTIONS.map((option) => <th className={correctSet.has(option) ? 'corr' : ''} key={option}>{option}</th>)}
+                {OPTIONS.map((option) => (
+                  <th className={`num${correctSet.has(option) ? ' corr' : ''}`} key={option}>{option}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -81,7 +83,7 @@ export function MultiAnswerResponse({ item, nStudents }: { item: ItemStat; nStud
                     const rate = row.dist[option] ?? 0;
                     return (
                       <td
-                        className={correctSet.has(option) ? 'corr' : ''}
+                        className={`num${correctSet.has(option) ? ' corr' : ''}`}
                         key={option}
                         style={{ background: responseCellBackground(rate, correctSet.has(option)) }}
                       >

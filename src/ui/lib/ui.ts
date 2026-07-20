@@ -52,7 +52,10 @@ export function bgLevel(p: number | null): string {
 /** 보기 선택률 셀: 정답은 초록, 오답은 빨강이며 선택률이 높을수록 진하게 표시한다. */
 export function responseCellBackground(rate: number, correct: boolean): string {
   if (rate <= 0) return 'transparent';
-  return correct ? `rgba(77,146,33,${0.12 + rate * 0.55})` : `rgba(200,80,80,${rate * 0.5})`;
+  if (correct) return `rgba(77,146,33,${0.12 + rate * 0.55})`;
+  const wrongIntensity = Math.min(rate / 0.7, 1);
+  const alpha = Number((wrongIntensity * 0.5).toFixed(3));
+  return `rgba(200,80,80,${alpha})`;
 }
 
 /** 진단(플래그) 짧은 라벨 — 예상↔실측 병합 */

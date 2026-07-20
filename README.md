@@ -20,4 +20,4 @@ npm run build:all
 
 상세 설계는 [docs/설계명세서.md](docs/설계명세서.md)를 참고하세요.
 
-GitHub Pages에서는 저장소의 `main/package.json`을 유휴 시간에 확인해 새 버전을 알립니다. 커스텀 도메인은 `.env.example`의 URL을 설정하세요.
+v1.1부터는 `main/package.json`을 유휴 시간에 확인해 업데이트를 알리고 다운받을 수 있도록 합니다.

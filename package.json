@@ -1,6 +1,6 @@
 {
   "name": "achievement-eval",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "지필평가 문항분석 웹앱 — KICE webapp_mid 개선",

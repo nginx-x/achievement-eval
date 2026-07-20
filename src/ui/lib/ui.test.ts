@@ -9,8 +9,14 @@ describe('보기 선택률 배경색', () => {
 
   it('정답은 초록, 오답은 빨강이며 선택률에 따라 강도가 증가한다', () => {
     expect(responseCellBackground(0.5, true)).toBe('rgba(77,146,33,0.395)');
-    expect(responseCellBackground(0.5, false)).toBe('rgba(200,80,80,0.25)');
+    expect(responseCellBackground(0.5, false)).toBe('rgba(200,80,80,0.357)');
     expect(responseCellBackground(0.8, true)).not.toBe(responseCellBackground(0.2, true));
     expect(responseCellBackground(0.8, false)).not.toBe(responseCellBackground(0.2, false));
+  });
+
+  it('오답 선택률 70%부터는 최대 빨간색으로 고정한다', () => {
+    expect(responseCellBackground(0.7, false)).toBe('rgba(200,80,80,0.5)');
+    expect(responseCellBackground(0.85, false)).toBe(responseCellBackground(0.7, false));
+    expect(responseCellBackground(1, false)).toBe(responseCellBackground(0.7, false));
   });
 });

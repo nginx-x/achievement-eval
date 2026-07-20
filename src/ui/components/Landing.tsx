@@ -97,14 +97,35 @@ export function Landing() {
 
       <footer className="colophon">
         <div className="colophon-head">이 도구에 대하여</div>
-        <p>
-          한국교육과정평가원의 성취평가 지원 웹앱
-          (<a href="https://kice-se.shinyapps.io/webapp_mid/" target="_blank" rel="noreferrer noopener">kice-se.shinyapps.io/webapp_mid</a>)
-          에서 아이디어를 얻어 구체화했습니다. 원본의 수행평가 분석 기능은 의도적으로 제외하고,
-          정기시험 분석에 집중했습니다. 덕산중학교 김원예 선생님의 연수에서 얻은 아이디어도 함께 담았습니다. 깊은 감사의 말씀을 드립니다. 또한 각종 예시 데이터를 통해 웹앱을 개선하는 데 도움을 주신 선생님들께도 감사드립니다. 한 문항에 여러 성취기준이 있는 경우 등은 충분히 검증하지 못했으므로,
-          어떤 문제라도 발생한다면 데이터 파일과 함께 알려주시면 고치겠습니다.
-          1.1 업데이트를 통해 변별도를 KICE 웹앱과 같은 방식으로 통일했습니다. 또한 각종 버그를 고치고, 복수답안 및 업데이트 확인 기능도 지원합니다. — 숭인중 김근홍 드림
+        <p className="colophon-intro">
+          정기시험 결과를 더 빠르게 검토할 수 있도록, 학교 현장의 사용 흐름에 맞춰 만든 문항분석 도구입니다.
         </p>
+
+        <div className="colophon-story">
+          <p>
+            한국교육과정평가원의 <a href="https://kice-se.shinyapps.io/webapp_mid/" target="_blank" rel="noreferrer noopener">성취평가 지원 웹앱</a>에서
+            아이디어를 얻었습니다. 수행평가 기능은 제외하고 정기시험 분석에 집중했습니다.
+          </p>
+          <p>
+            덕산중학교 김원예 선생님의 연수에서 얻은 아이디어와, 예시 데이터를 제공해 주신 여러 선생님의 도움을 반영했습니다. 깊이 감사드립니다.
+          </p>
+        </div>
+
+        <div className="colophon-notice">
+          <strong>사용 중 문제가 있다면</strong>
+          <span>충분히 검증되지 않은 상황이 있을 수 있습니다. 문제가 발생한 데이터 파일과 상황을 알려주시면 개선하겠습니다.</span>
+        </div>
+
+        <div className="colophon-updates">
+          <div className="colophon-update">
+            <strong>v1.2.0 업데이트</strong>
+            <p>
+              복수답안 문항의 조합별 응답분포와 선택지별 선택률 분석을 보강하고, 변별도를 KICE 방식으로 통일했습니다.
+              PDF 문항정보표 파싱을 개선했으며, 자동으로 새 버전을 확인하고, 업데이트를 바로 내려받을 수 있습니다.
+            </p>
+          </div>
+        </div>
+        <p className="colophon-by">숭인중 김근홍(delphi10@sen.go.kr) 드림</p>
       </footer>
     </div>
   );
