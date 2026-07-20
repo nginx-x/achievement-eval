@@ -1,0 +1,29 @@
+# dependencies and build output
+node_modules/
+dist/
+dist-single/
+dist-ssr/
+.vite/
+coverage/
+tmp/
+
+# local configuration and logs
+.env
+.env.*
+!.env.example
+*.local
+*.log
+.eslintcache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# 개인정보가 포함될 수 있는 사용자 업로드 원본
+example_data/
+*.uploaded.xlsx
+*.uploaded.xls
+*.uploaded.pdf
+
+# 개발용 파일
+docs/reference/
