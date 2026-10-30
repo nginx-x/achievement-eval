@@ -1,10 +1,9 @@
 // core/stats/achievement.ts — 성취수준 판정·분포
-import type { AchievementLevel, AchievementSummary, ClassItemRates, Cutoffs, LevelSummary, Student } from '../types';
+import type { AchievementLevel, AchievementSummary, AnswerCode, ClassItemRates, Cutoffs, LevelSummary, Student } from '../types';
 import { LEVELS } from '../types';
-import { CORRECT_MARK } from '../config';
+import { isCorrectResponse } from '../responseCodes';
 import { mean, pstdev } from './util';
 
-const isCorrect = (cell: string) => (cell ?? '').trim() === CORRECT_MARK;
 
 export function levelOf(total: number, c: Cutoffs): AchievementLevel {
   if (total >= c.AB) return 'A';
@@ -60,11 +59,11 @@ export function computeAchievement(students: Student[], cutoffs: Cutoffs): Achie
 }
 
 /** 반별 문항 정답률 (A4) */
-export function computeClassItemRates(students: Student[], classes: string[], nQuestions: number): ClassItemRates[] {
+export function computeClassItemRates(students: Student[], classes: string[], nQuestions: number, answerKey: AnswerCode[] = []): ClassItemRates[] {
   return classes.map((classId) => {
     const rows = students.filter((s) => s.classId === classId);
     const rates = Array.from({ length: nQuestions }, (_, q) =>
-      rows.length ? rows.reduce((a, s) => a + (isCorrect(s.answers[q] ?? '') ? 1 : 0), 0) / rows.length : null,
+      rows.length ? rows.reduce((a, s) => a + (isCorrectResponse(s.answers[q], answerKey[q]) ? 1 : 0), 0) / rows.length : null,
     );
     return { classId, n: rows.length, rates };
   });

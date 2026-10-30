@@ -23,7 +23,7 @@ interface AppState {
   filters: string[];
   sort?: { key: string; dir: 'asc' | 'desc' };
 
-  loadRecognized(recs: Recognition[]): void;
+  loadRecognized(recs: Recognition[], options?: { allowConflicts?: boolean }): void;
   setCutoffs(c: Cutoffs): void;
   selectQ(q?: number): void;
   toggleFilter(code: string): void;
@@ -38,7 +38,7 @@ export const useStore = create<AppState>((set, get) => ({
   cutoffs: { ...config.DEFAULT_CUTOFFS },
   filters: [],
 
-  loadRecognized(recs) {
+  loadRecognized(recs, options) {
     const infos = recs.filter((r) => r.role === 'info' && r.info);
     const marks = recs.filter((r) => r.role === 'marks' && r.sheet);
     if (!infos.length || !marks.length) {
@@ -47,6 +47,10 @@ export const useStore = create<AppState>((set, get) => ({
     }
     try {
       const { info, dataset, issues } = buildDatasetFrom(infos[0].info!, marks.map((m) => m.sheet!));
+      if (issues.some((issue) => issue.severity === '차단') && !options?.allowConflicts) {
+        set({ status: 'empty', issues, error: undefined, info: undefined, dataset: undefined, result: undefined });
+        return;
+      }
       const result = analyze(dataset, config.DEFAULT_CUTOFFS);
       set({ info, dataset, issues, result, status: 'ready', cutoffs: { ...config.DEFAULT_CUTOFFS }, selectedQ: undefined, filters: [], sort: undefined });
     } catch (e) {
@@ -63,7 +67,8 @@ export const useStore = create<AppState>((set, get) => ({
   selectQ(q) { set({ selectedQ: q }); },
   toggleFilter(code) {
     const f = new Set(get().filters);
-    f.has(code) ? f.delete(code) : f.add(code);
+    if (f.has(code)) f.delete(code);
+    else f.add(code);
     set({ filters: [...f] });
   },
   clearFilters() { set({ filters: [] }); },

@@ -1,9 +1,8 @@
 // core/stats/reliability.ts — Cronbach's alpha (획득배점 기준)
 import type { Dataset, Reliability } from '../types';
-import { CORRECT_MARK } from '../config';
+import { isCorrectResponse } from '../responseCodes';
 import { pvariance } from './util';
 
-const isCorrect = (cell: string) => cell.trim() === CORRECT_MARK;
 
 /**
  * Cronbach α = k/(k-1) · (1 − Σσ²ᵢ / σ²ₜ)
@@ -17,7 +16,7 @@ export function cronbachAlpha(ds: Dataset): Reliability {
 
   let sumItemVar = 0;
   for (let i = 0; i < ds.nQuestions; i++) {
-    const col = ds.students.map((s) => (isCorrect(s.answers[i] ?? '') ? ds.points[i] : 0));
+    const col = ds.students.map((s) => (isCorrectResponse(s.answers[i], ds.answerKey[i]) ? ds.points[i] : 0));
     sumItemVar += pvariance(col);
   }
   // 서답형·기타 획득점수를 폴리토머스 의사문항으로 추가(배점 > 0 이고 점수 컬럼 존재 시)

@@ -13,7 +13,7 @@ function DiscChip({ value }: { value: number }) {
   const b = config.bandOf(config.DISC_BANDS, value);
   return (
     <span className="mchip">
-      <span className="mchip-l">변별도(KICE 방식)</span>
+      <span className="mchip-l">변별도</span>
       <span className="mchip-v" style={{ color: TONE[b.tone] }}>{FORMAT.disc(value)}</span>
       <span className="mchip-b">{b.label}</span>
     </span>

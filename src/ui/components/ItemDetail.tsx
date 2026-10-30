@@ -119,7 +119,7 @@ export function ItemDetail() {
 
               <div className="metric-chips">
                 <Metric label="정답률" text={FORMAT.p(it.p)} bands={config.P_BANDS} value={it.p} />
-                <Metric label="변별도(KICE 방식)" text={FORMAT.disc(it.discrimination)} bands={config.DISC_BANDS} value={it.discrimination} />
+                <Metric label="변별도" text={FORMAT.disc(it.discrimination)} bands={config.DISC_BANDS} value={it.discrimination} />
               </div>
 
               {(it.decidesBoundary || it.representsLevels.length > 0) && (

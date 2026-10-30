@@ -28,6 +28,14 @@ export function normalizeResponseCell(value: unknown): string {
   return /^[a-z]$/i.test(raw) ? raw.toUpperCase() : raw;
 }
 
+/** NEIS 구형 점 표시와 선택지 번호·복수응답 코드 표시를 함께 판정한다. */
+export function isCorrectResponse(value: unknown, answerKey: AnswerCode): boolean {
+  const response = normalizeResponseCell(value);
+  if (response === '.') return true;
+  const code = normalizeAnswerCode(response);
+  return code != null && answerKey != null && code === normalizeAnswerCode(answerKey);
+}
+
 export function decodeAnswerCode(code: AnswerCode): number[] {
   if (code == null) return [];
   if (/^[1-5]$/.test(code)) return [+code];

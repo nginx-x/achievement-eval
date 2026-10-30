@@ -73,12 +73,30 @@ export function kendallTauB(xs: number[], ys: number[]): number | null {
   return den === 0 ? null : (nc - nd) / den;
 }
 
-/** 두 비율차의 95% 신뢰구간(정규근사) — 역전 유의성 판정용 */
+/** Wilson 구간. 0%·100%에서도 관측 비율만으로 불확실성이 0이 되지 않는다.
+ * https://www.itl.nist.gov/div898/handbook/prc/section2/prc241.htm
+ */
+function wilsonCI(p: number, n: number): { lo: number; hi: number } {
+  const z = 1.959963984540054;
+  const z2 = z * z;
+  const denominator = 1 + z2 / n;
+  const center = (p + z2 / (2 * n)) / denominator;
+  const half = z * Math.sqrt(p * (1 - p) / n + z2 / (4 * n * n)) / denominator;
+  return { lo: Math.max(0, center - half), hi: Math.min(1, center + half) };
+}
+
+/** 두 비율차의 95% Newcombe 구간(Wilson 기반, 연속성 보정 없음).
+ * https://www.statsmodels.org/stable/generated/statsmodels.stats.proportion.confint_proportions_2indep.html
+ */
 export function propDiffCI(
   p1: number, n1: number, p2: number, n2: number,
 ): { diff: number; lo: number; hi: number } {
   const diff = p1 - p2;
-  if (n1 === 0 || n2 === 0) return { diff, lo: -1, hi: 1 };
-  const se = Math.sqrt((p1 * (1 - p1)) / n1 + (p2 * (1 - p2)) / n2);
-  return { diff, lo: diff - 1.96 * se, hi: diff + 1.96 * se };
+  if (n1 <= 0 || n2 <= 0) return { diff, lo: -1, hi: 1 };
+  const a = wilsonCI(p1, n1), b = wilsonCI(p2, n2);
+  return {
+    diff,
+    lo: Math.max(-1, diff - Math.hypot(p1 - a.lo, b.hi - p2)),
+    hi: Math.min(1, diff + Math.hypot(a.hi - p1, p2 - b.lo)),
+  };
 }

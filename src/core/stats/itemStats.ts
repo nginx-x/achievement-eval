@@ -2,19 +2,18 @@
 import type { AchievementLevel, AnswerCode, Dataset, ItemStat, LevelGap, LevelOptionDist, LevelRate } from '../types';
 import { LEVELS } from '../types';
 import { BOUNDARY_GAP, CORRECT_MARK, NO_RESPONSE, OTHER_RESPONSE, SHADING } from '../config';
-import { decodeAnswerCode, isMultipleAnswerCode, normalizeAnswerCode, normalizeResponseCell } from '../responseCodes';
+import { decodeAnswerCode, isCorrectResponse, isMultipleAnswerCode, normalizeAnswerCode, normalizeResponseCell } from '../responseCodes';
 import { pearson } from './util';
 import { computeItemFlags } from './flags';
 
 const OPTIONS = ['1', '2', '3', '4', '5'];
 const DISTRACTOR_OPTIONS = [...OPTIONS, NO_RESPONSE, OTHER_RESPONSE];
-const isCorrect = (cell: string) => (cell ?? '').trim() === CORRECT_MARK;
 const isBlank = (cell: string) => (cell ?? '').trim() === '';
 
 /** 한 학생이 문항 i 에서 고른 보기 번호(정답이면 정답 키, 공백이면 무응답, 비표준 표기는 기타) */
 function chosenOption(cell: string, answerKey: AnswerCode): string {
   if (isBlank(cell)) return NO_RESPONSE;
-  if (isCorrect(cell)) return answerKey != null ? String(answerKey) : CORRECT_MARK;
+  if (isCorrectResponse(cell, answerKey)) return answerKey != null ? String(answerKey) : CORRECT_MARK;
   const picked = normalizeResponseCell(cell);
   if (OPTIONS.includes(picked)) return picked;
   if (isMultipleAnswerCode(answerKey) && isMultipleAnswerCode(normalizeAnswerCode(picked))) return picked;
@@ -29,7 +28,7 @@ function optionSelection(
   const counts: Record<string, number> = Object.fromEntries(OPTIONS.map((option) => [option, 0]));
   for (const index of indexes) {
     const cell = cells[index];
-    const code = isCorrect(cell) ? answerKey : normalizeAnswerCode(cell);
+    const code = isCorrectResponse(cell, answerKey) ? answerKey : normalizeAnswerCode(cell);
     for (const option of decodeAnswerCode(code)) counts[String(option)] += 1;
   }
   for (const option of OPTIONS) counts[option] = indexes.length ? counts[option] / indexes.length : 0;
@@ -42,7 +41,7 @@ export function computeItemStats(ds: Dataset, levels: AchievementLevel[]): ItemS
 
   return ds.itemInfo.map((info, i) => {
     const cells = ds.students.map((s) => s.answers[i] ?? '');
-    const correct01: number[] = cells.map((c) => (isCorrect(c) ? 1 : 0));
+    const correct01: number[] = cells.map((c) => (isCorrectResponse(c, ds.answerKey[i]) ? 1 : 0));
     const nCorrect = correct01.reduce((a, b) => a + b, 0);
     const p = N ? nCorrect / N : 0;
 

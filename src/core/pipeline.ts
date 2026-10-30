@@ -32,8 +32,15 @@ function buildStudents(merged: MergedRaw): Student[] {
 /** 이미 파싱된 문항정보표 + 정오표[] → 검증된 Dataset (xlsx·pdf 공용) */
 export function buildDatasetFrom(info: ItemInfoTable, sheets: Marksheet[]): BuildResult {
   const merged = mergeMarksheets(sheets, info);
+  // 불일치를 확인하고 진행할 때도 첫 정오표의 실제 문항 범위에 맞춘다.
+  // 정보표의 초과 문항은 제외하고, 누락 문항은 메타정보 미상으로 남긴다.
+  const itemInfo = Array.from({ length: merged.nQuestions }, (_, i) =>
+    info.items.find(item => item.qno === i + 1) ?? {
+      qno: i + 1, area: '미상', standard: '', difficulty: '미상' as const,
+      points: merged.points[i] ?? 0, answer: null, type: '선택형' as const,
+    });
   const dataset: Dataset = {
-    itemInfo: info.items,
+    itemInfo,
     consItems: info.consItems,
     answerKey: merged.answerKey,
     points: merged.points,

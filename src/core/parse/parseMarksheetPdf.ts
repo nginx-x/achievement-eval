@@ -27,6 +27,7 @@ export function parseMarksheetPdf(words: PdfWord[], sourceName = ''): Marksheet 
       return word.x + (offset / word.str.length) * (word.x1 - word.x);
     }));
   const N = centers.length;
+  if (!N) throw new Error('정오표에서 문항 번호를 찾을 수 없습니다.');
 
   const closestAt = <T>(row: PdfWord[], center: number, parse: (word: PdfWord) => T | null): T | null => {
     const candidates = row
@@ -47,11 +48,28 @@ export function parseMarksheetPdf(words: PdfWord[], sourceName = ''): Marksheet 
   const totLbls = words.filter((w) => w.str.trim() === '총점');
   const xTot = totLbls.length ? cxw(totLbls[totLbls.length - 1]) : 486;
 
-  const seats = words.filter((w) => SEAT.test(w.str.trim())).sort((a, b) => cyw(a) - cyw(b));
+  const rowAt = (label: PdfWord) => words.filter((w) => w.page === label.page && Math.abs(cyw(w) - cyw(label)) < 5);
+  const scoreX = (label: string) => {
+    const word = words.find((w) => w.str.replace(/\s/g, '').replace(/점수$/, '') === label && cxw(w) > 390);
+    return word ? cxw(word) : null;
+  };
+  const partXs = { sel: scoreX('선택형'), cons: scoreX('서답형'), etc: scoreX('기타') };
+  const scoreAt = (row: PdfWord[], x: number) => row
+    .filter((w) => Math.abs(cxw(w) - x) < 14 && numRe.test(w.str.trim()))
+    .sort((a, b) => Math.abs(cxw(a) - x) - Math.abs(cxw(b) - x))[0];
+  const scoreParts = (row: PdfWord[]) => {
+    if (partXs.sel == null || partXs.cons == null || partXs.etc == null) return null;
+    const sel = scoreAt(row, partXs.sel);
+    if (!sel) return null;
+    return { sel: +sel.str, cons: +(scoreAt(row, partXs.cons)?.str ?? 0), etc: +(scoreAt(row, partXs.etc)?.str ?? 0) };
+  };
+  const pointLabel = words.find((w) => w.str.trim() === '배점');
+  const scoreMax = pointLabel ? scoreParts(rowAt(pointLabel)) : null;
+
+  const seats = words.filter((w) => SEAT.test(w.str.trim())).sort((a, b) => a.page - b.page || cyw(a) - cyw(b));
   const students: RawStudent[] = [];
   for (const st of seats) {
-    const yy = cyw(st);
-    const row = words.filter((w) => Math.abs(cyw(w) - yy) < 5);
+    const row = rowAt(st);
     const answers = Array.from({ length: N }, () => '');
     for (const t of row) {
       const x = cxw(t);
@@ -65,21 +83,20 @@ export function parseMarksheetPdf(words: PdfWord[], sourceName = ''): Marksheet 
     }
     const scoreNums = row
       .filter((w) => cxw(w) > (centers[N - 1] ?? 390) + 4)
+      .sort((a, b) => cxw(a) - cxw(b))
       .flatMap((w) => numsIn(w.str));
-    const totTok = row
-      .filter((w) => Math.abs(cxw(w) - xTot) < 14 && numRe.test(w.str.trim()))
-      .sort((a, b) => Math.abs(cxw(a) - xTot) - Math.abs(cxw(b) - xTot))[0];
-    const total = scoreNums.length ? Math.round(scoreNums[scoreNums.length - 1]) : (totTok ? Math.round(+totTok.str) : 0);
+    const totTok = scoreAt(row, xTot);
+    const total = totTok ? +totTok.str : (scoreNums[scoreNums.length - 1] ?? 0);
     const [classId, seat] = st.str.trim().split('/').map((s) => s.trim());
     const name = row
       .filter((w) => /[가-힣]/.test(w.str) && cxw(w) < 105)
       .sort((a, b) => a.x - b.x)
       .map((w) => w.str)
       .join('');
-    students.push({ classId, seat, studentId: '', name, answers, total, scores: null });
+    students.push({ classId, seat, studentId: '', name, answers, total, scores: scoreParts(row) });
   }
 
-  return { meta: parseMeta(words), answerKey, points, nQuestions: N, students, scoreMax: null, sourceName };
+  return { meta: parseMeta(words), answerKey, points, nQuestions: N, students, scoreMax, sourceName };
 }
 
 function parseMeta(words: PdfWord[]): Marksheet['meta'] {

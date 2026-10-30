@@ -19,7 +19,7 @@ export function analyze(ds: Dataset, cutoffs: Cutoffs = DEFAULT_CUTOFFS): Analys
   const reliability = cronbachAlpha(ds);
   const expectedVsActual = computeExpectedVsActual(ds.itemInfo, items);
   const standards = computeStandards(ds.itemInfo, items);
-  const classItemRates = computeClassItemRates(ds.students, ds.classes, ds.nQuestions);
+  const classItemRates = computeClassItemRates(ds.students, ds.classes, ds.nQuestions, ds.answerKey);
   const constructed = computeConstructed(ds.students, levels, ds.classes, ds.scoreMax, ds.consItems);
   const risk = computeRiskSummary(items, achievement, reliability, expectedVsActual, constructed);
 

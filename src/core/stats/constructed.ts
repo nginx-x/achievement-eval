@@ -71,7 +71,7 @@ export function computeConstructed(
   // 플래그: 음의 변별도(정답 채점/문항 결함 의심), 낮은 획득률
   const flags: Flag[] = [];
   if (discrimination < 0) {
-    flags.push({ level: '심각', code: 'CONS_NEG_DISC', message: `서답형 변별도 음수(${discrimination.toFixed(2)}) — 채점/문항 결함 의심` });
+    flags.push({ level: '점검', code: 'CONS_NEG_DISC', message: `서답형 음의 변별도(${discrimination.toPrecision(3)}) 관찰 — 표본 크기와 채점·응답 패턴을 함께 검토하세요` });
   }
 
   return {

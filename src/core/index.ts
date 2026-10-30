@@ -8,6 +8,7 @@ export {
   MULTI_ANSWER_OPTIONS,
   normalizeAnswerCode,
   normalizeResponseCell,
+  isCorrectResponse,
   decodeAnswerCode,
   isMultipleAnswerCode,
   formatAnswerCode,

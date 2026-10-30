@@ -53,8 +53,6 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'node',
       include: ['src/**/*.test.ts'],
-      // 탐색 중 만든 임시 특성화 테스트는 파일을 보존하되 정식 회귀에서는 제외한다.
-      exclude: ['src/**/*.tmp*.test.ts'],
     },
   };
 });

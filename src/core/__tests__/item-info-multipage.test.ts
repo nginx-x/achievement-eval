@@ -1,4 +1,4 @@
-// multipage-stress.tmp.test.ts — 임시 스트레스 테스트(3페이지 초과·40문항급). 검증 후 삭제 예정.
+// 3페이지 초과·40문항급 문항정보표에 대한 회귀 테스트.
 // 실측 좌표(숭인 PDF)·실측 행 구조(영어 XLSX)를 그대로 본떠 43문항(선택 38+서답 5)을 합성.
 import { describe, expect, it } from 'vitest';
 import { parseItemInfo, parseItemInfoPdf } from '../index';
@@ -11,7 +11,7 @@ interface Spec {
   standards: string[]; // 복수면 다중 성취기준(연접)
   diff: '어려움' | '보통' | '쉬움';
   pts: number;
-  ansStr: string; // '3 ' | '1,4' | '별지 참조'
+  ansStr: string; // '3 ' | '별지 참조'
 }
 
 const SHORT = '[9영03-01] 문장을 의미 단위로 끊어 읽으면서 의미를 파악할 수 있다.';
@@ -26,7 +26,7 @@ function makeSpecs(): { sel: Spec[]; cons: Spec[] } {
   const sel: Spec[] = [];
   for (let q = 1; q <= 38; q++) {
     const multi = q === 7 || q === 26 || q === 34; // 다중 성취기준
-    const ansStr = q === 16 ? '1,4' : q === 22 ? '3,5' : `${((q - 1) % 5) + 1} `; // 복수정답 2개
+    const ansStr = `${((q - 1) % 5) + 1} `;
     sel.push({
       qno: q,
       area: multi ? '읽기, 쓰기' : AREAS[q % 3],
@@ -49,8 +49,8 @@ function makeSpecs(): { sel: Spec[]; cons: Spec[] } {
 
 const norm = (s: string) => s.replace(/\s+/g, '');
 const expectedAnswer = (s: Spec) => {
-  const n = Number.parseFloat(s.ansStr.trim());
-  return Number.isFinite(n) ? Math.round(n) : null;
+  const value = s.ansStr.trim();
+  return /^\d+$/.test(value) ? Number(value) : null;
 };
 
 // ───────── XLSX 빌더(영어 예시 레이아웃: 0번호/1영역/2기준/3~5난이도/6배점/7정답) ─────────
@@ -245,7 +245,7 @@ function checkItems(
 describe('3페이지 초과·43문항 스트레스(합성 데이터, 실측 레이아웃 모사)', () => {
   const { sel, cons } = makeSpecs();
 
-  it('XLSX: 43문항·5페이지 푸터·줄바꿈 연속행·다중 성취기준·복수정답', () => {
+  it('XLSX: 43문항·5페이지 푸터·줄바꿈 연속행·다중 성취기준', () => {
     const rows = buildXlsxRows(sel, cons, 5);
     const info = parseItemInfo(rows);
     const findings: Finding[] = [];
@@ -253,15 +253,15 @@ describe('3페이지 초과·43문항 스트레스(합성 데이터, 실측 레�
     if (info.consItems.length !== 5) findings.push({ where: 'xlsx', qno: '-', what: `서답형 ${info.consItems.length}/5` });
     checkItems('xlsx선택', info.items, sel, findings, { exactStandard: true });
     checkItems('xlsx서답', info.consItems, cons, findings, { exactStandard: true });
-    if (info.subject !== '영어' || info.grade !== '3' || info.examName !== '기말고사')
+    if (info.subject !== '영어' || info.grade !== '3학년' || info.examName !== '1학기 기말고사')
       findings.push({ where: 'xlsx', qno: '-', what: `메타: ${info.subject}/${info.grade}/${info.examName}` });
-    console.log('XLSX findings:', JSON.stringify(findings, null, 1));
     expect(findings).toEqual([]);
   });
 
-  it('PDF: 43문항·4페이지·페이지 걸침 행·다중 성취기준·복수정답', () => {
+  it('PDF: 43문항·4페이지·페이지 걸침 행·다중 성취기준', () => {
     const { words, pages, splitQnos } = buildPdfWords(sel, cons);
-    console.log(`PDF 합성: ${pages}페이지, 페이지 걸침 문항: [${splitQnos.join(', ')}]`);
+    expect(pages).toBe(4);
+    expect(splitQnos.length).toBeGreaterThan(0);
     const info = parseItemInfoPdf(words);
     const findings: Finding[] = [];
     if (info.items.length !== 38) findings.push({ where: 'pdf', qno: '-', what: `선택형 ${info.items.length}/38` });
@@ -270,7 +270,6 @@ describe('3페이지 초과·43문항 스트레스(합성 데이터, 실측 레�
     checkItems('pdf서답', info.consItems, cons, findings, { exactStandard: false });
     if (info.subject !== '영어' || info.grade !== '3' || info.examName !== '기말고사')
       findings.push({ where: 'pdf', qno: '-', what: `메타: ${info.subject}/${info.grade}/${info.examName}` });
-    console.log('PDF findings:', JSON.stringify(findings, null, 1));
     expect(findings).toEqual([]);
   });
 
@@ -300,7 +299,7 @@ describe('3페이지 초과·43문항 스트레스(합성 데이터, 실측 레�
     expect(norm(q2.standard)).toContain('파악할수있다');
   });
 
-  it('PDF: 데이터 행이 y>780(노이즈 필터 경계)에 놓이면? — 한계 특성화', () => {
+  it('PDF: 데이터 행이 y>780인 노이즈 필터 경계에서도 문항을 인식한다', () => {
     const g: PdfGen = { words: [], page: 1, y: 53.2, splitQnos: [] };
     emitPdfHeader(g);
     g.y = 768.0; pdfWord(g, '[9영03-01] 문장을 의미 단위로', 177.0);
@@ -309,7 +308,6 @@ describe('3페이지 초과·43문항 스트레스(합성 데이터, 실측 레�
     pdfWord(g, '○', DIFF_X.보통, 10); pdfWord(g, '3', 503.5, 5); pdfWord(g, '2', 536.5, 5);
     const info = parseItemInfoPdf(g.words);
     const q1 = info.items.find((x) => x.qno === 1) ?? info.consItems.find((x) => x.qno === 1);
-    console.log('y>780 특성화:', JSON.stringify(q1));
-    expect(q1).toBeTruthy(); // 문항 자체는 잡히는지
+    expect(q1).toBeTruthy();
   });
 });

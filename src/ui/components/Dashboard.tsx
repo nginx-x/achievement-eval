@@ -76,7 +76,7 @@ export function Dashboard() {
 
       <main className="content">
         {blocking.length > 0 && (
-          <div className="banner banner-block">⛔ 검증 차단 {blocking.length}건: {blocking.map((i) => i.message).join(' · ')} — 결과가 부정확할 수 있습니다.</div>
+          <div className="banner banner-block" role="alert">⚠ 확인 후 진행한 입력 불일치 {blocking.length}건: {blocking.map((i) => i.message).join(' · ')} — 결과가 부정확할 수 있습니다. 문항 범위·정답·배점은 첫 번째 정오표 기준입니다.</div>
         )}
         {warns.length > 0 && (
           <div className="banner banner-warn">⚠ 경고 {warns.length}건: {warns.slice(0, 3).map((i) => i.message).join(' · ')}{warns.length > 3 ? ' …' : ''}</div>

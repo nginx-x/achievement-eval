@@ -1,4 +1,5 @@
-import { useState, useCallback, type DragEvent } from 'react';
+import { useState, useCallback, useMemo, type DragEvent } from 'react';
+import { buildDatasetFrom } from '@core/index';
 import { useStore } from '../state/store';
 import { recognizeFile, type Recognition } from '../lib/recognize';
 
@@ -9,11 +10,13 @@ export function Landing() {
   const [recs, setRecs] = useState<Recognition[]>([]);
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(true);
 
   const add = useCallback(async (list: FileList | null) => {
     if (!list) return;
-    const files = [...list].filter((f) => /\.(xlsx|pdf)$/i.test(f.name));
+    const files = [...list].filter((f) => /\.(xls|xlsx|pdf)$/i.test(f.name));
     if (!files.length) return;
+    setGuideOpen(false);
     setBusy(true);
     const results: Recognition[] = [];
     for (const f of files) results.push(await recognizeFile(f)); // 순차(공유 pdf 워커 안전)
@@ -24,8 +27,16 @@ export function Landing() {
   const remove = (i: number) => setRecs((prev) => prev.filter((_, x) => x !== i));
   const infos = recs.filter((r) => r.role === 'info');
   const marks = recs.filter((r) => r.role === 'marks');
-  const canGo = infos.length >= 1 && marks.length >= 1;
-  const go = () => { if (canGo) loadRecognized(recs); };
+  const validation = useMemo(() => {
+    const info = recs.find((r) => r.role === 'info' && r.info)?.info;
+    const sheets = recs.flatMap((r) => r.role === 'marks' && r.sheet ? [r.sheet] : []);
+    if (!info || !sheets.length) return { issues: [], error: undefined };
+    try { return { issues: buildDatasetFrom(info, sheets).issues, error: undefined }; }
+    catch (e) { return { issues: [], error: e instanceof Error ? e.message : String(e) }; }
+  }, [recs]);
+  const conflicts = validation.issues.filter((issue) => issue.severity === '차단');
+  const canGo = !busy && !validation.error && infos.length >= 1 && marks.length >= 1;
+  const go = () => { if (canGo) loadRecognized(recs, { allowConflicts: conflicts.length > 0 }); };
 
   const onDrop = (e: DragEvent) => { e.preventDefault(); setOver(false); void add(e.dataTransfer.files); };
 
@@ -40,13 +51,13 @@ export function Landing() {
         <label className={`dropzone${over ? ' over' : ''}`}
           onDragOver={(e) => { e.preventDefault(); setOver(true); }}
           onDragLeave={() => setOver(false)} onDrop={onDrop}>
-          <input type="file" accept=".xlsx,.pdf" multiple hidden onChange={(e) => void add(e.target.files)} />
+          <input type="file" accept=".xls,.xlsx,.pdf" multiple hidden onChange={(e) => void add(e.target.files)} />
           <div className="dz-icon">＋</div>
-          <div className="dz-title">문항정보표와 반별 학생답정오표(.xls 또는 PDF)를 여기에 놓으세요.</div>
+          <div className="dz-title">문항정보표와 반별 학생답정오표(.xls·.xlsx 또는 PDF)를 여기에 놓으세요.</div>
           <div className="dz-hint">여러 파일을 한 번에 전부 올리세요. 엑셀/PDF 섞어도 자동 인식합니다.{busy ? ' · 인식 중…' : ''}</div>
         </label>
 
-        <details className="neis-guide" open>
+        <details className="neis-guide" open={guideOpen} onToggle={(e) => setGuideOpen(e.currentTarget.open)}>
           <summary>NEIS에서 필요한 파일 받는 방법</summary>
           <div className="neis-body">
             <div className="neis-file">
@@ -85,13 +96,21 @@ export function Landing() {
           </ul>
         )}
 
+        {validation.error && <div className="banner banner-block" role="alert">파일 검증 중 오류: {validation.error}</div>}
+        {conflicts.length > 0 && (
+          <div className="banner banner-warn" role="alert">
+            <strong>파일 사이에 불일치가 있어 분석 결과가 부정확할 수 있습니다.</strong>
+            <ul>{conflicts.map((issue, i) => <li key={i}>{issue.file && `${issue.file}: `}{issue.message}</li>)}</ul>
+            <p>문항 범위·정답·배점은 첫 번째 정오표({marks[0]?.file.name})를 기준으로 사용합니다. 파일을 제거·교체하거나, 아래 버튼으로 불일치를 확인하고 분석을 진행할 수 있습니다.</p>
+          </div>
+        )}
         <div className="upload-foot">
           <div className="reqs">
             <span className={infos.length ? 'ok' : 'need'}>{infos.length ? '✓' : '○'} 문항정보표{infos.length ? ` (${infos.length})` : ''}</span>
             <span className={marks.length ? 'ok' : 'need'}>{marks.length ? '✓' : '○'} 학생답정오표 {marks.length}개</span>
             {infos.length > 1 && <span className="warn-inline">문항정보표가 여러 개 첨부되어, 첫 번째만 사용합니다.</span>}
           </div>
-          <button className="btn-primary" disabled={!canGo} onClick={go}>분석 보기 →</button>
+          <button className="btn-primary" disabled={!canGo} onClick={go}>{conflicts.length ? '불일치를 확인하고 분석 →' : '분석 보기 →'}</button>
         </div>
       </section>
 
@@ -118,6 +137,13 @@ export function Landing() {
 
         <div className="colophon-updates">
           <div className="colophon-update">
+            <strong>v1.3.0 업데이트</strong>
+            <ul>
+              <li>2026학년도 2학기에 NEIS 학생별답정오표 출력 형식 변경분 반영</li>
+              <li>기타 동작 정확도 개선</li>
+            </ul>
+          </div>
+          <div className="colophon-update">
             <strong>v1.2.0 업데이트</strong>
             <p>
               복수답안 문항의 조합별 응답분포와 선택지별 선택률 분석을 보강하고, 변별도를 KICE 방식으로 통일했습니다.
@@ -126,6 +152,13 @@ export function Landing() {
           </div>
         </div>
         <p className="colophon-by">숭인중 김근홍(delphi10@sen.go.kr) 드림</p>
+        <nav className="colophon-links" aria-label="프로젝트 링크">
+          <a href="https://github.com/nginx-x/achievement-eval" target="_blank" rel="noreferrer noopener">소스 코드</a>
+          <span aria-hidden="true">·</span>
+          <a href="https://github.com/nginx-x/nginx-x.github.io" target="_blank" rel="noreferrer noopener">GitHub Pages 저장소</a>
+          <span aria-hidden="true">·</span>
+          <a href="https://nginx-x.github.io/achievement-eval/" target="_blank" rel="noreferrer noopener">웹앱 열기</a>
+        </nav>
       </footer>
     </div>
   );

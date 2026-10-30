@@ -1,6 +1,6 @@
 // core/parse/merge.ts — 반별 정오표 N개 병합 + 실시간 검증(§2.3)
 import type { AnswerCode, ItemInfoTable, Marksheet, RawStudent, ValidationIssue } from '../types';
-import { CORRECT_MARK } from '../config';
+import { isCorrectResponse } from '../responseCodes';
 
 export interface MergedRaw {
   students: RawStudent[];
@@ -86,7 +86,7 @@ export function mergeMarksheets(sheets: Marksheet[], info?: ItemInfoTable): Merg
     if (!st.scores) continue;
     const { sel, cons, etc } = st.scores;
     if (Math.abs(sel + cons + etc - st.total) > 0.005) sumBad++;
-    const missed = st.answers.reduce((a, ans, i) => a + ((ans ?? '').trim() === CORRECT_MARK ? 0 : base.points[i] ?? 0), 0);
+    const missed = st.answers.reduce((a, ans, i) => a + (isCorrectResponse(ans, base.answerKey[i]) ? 0 : base.points[i] ?? 0), 0);
     if (Math.abs(selMax - missed - sel) > 0.005) reconBad++;
   }
   if (sumBad > 0) {

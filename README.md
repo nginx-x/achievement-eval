@@ -21,3 +21,7 @@ npm run build:all
 상세 설계는 [docs/설계명세서.md](docs/설계명세서.md)를 참고하세요.
 
 v1.1부터는 `main/package.json`을 유휴 시간에 확인해 업데이트를 알리고 다운받을 수 있도록 합니다.
+
+## 라이선스
+
+이 프로젝트는 [GNU General Public License v2.0](LICENSE)에 따라 배포됩니다.

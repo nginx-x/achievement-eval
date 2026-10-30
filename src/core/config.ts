@@ -14,7 +14,7 @@ export const OTHER_RESPONSE = '기타';
 
 /** 역전/표본 관련 임계 */
 export const REVERSAL = {
-  MIN_BAND_N: 15, // 밴드 n<15 이면 상/하 축약
+  MIN_BAND_N: 15, // 상위(A+B)·하위(D+E) 각각의 심각 판정 최소 인원
   MARGIN: 0.1, // 상위-하위 정답률차 유의 마진
   ADJ_MARGIN: 0.15, // 인접 수준 비단조(부분 역전) 판정 마진 — 소표본 노이즈 흡수
   ADJ_MIN_N: 5, // 비단조 비교에 포함할 수준의 최소 인원
