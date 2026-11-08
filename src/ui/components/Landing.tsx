@@ -137,9 +137,8 @@ export function Landing() {
 
         <div className="colophon-updates">
           <div className="colophon-update">
-            <strong>v1.3.0 업데이트</strong>
+            <strong>v1.3.1 업데이트</strong>
             <ul>
-              <li>2026학년도 2학기에 NEIS 학생별답정오표 출력 형식 변경분 반영</li>
               <li>기타 동작 정확도 개선</li>
             </ul>
           </div>
